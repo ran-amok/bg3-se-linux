@@ -1,0 +1,15 @@
+/* Every manifest/<build-id>.tsv, concatenated by CMake at configure time into the
+ * blob below; read by manifest.cpp. CMake writes this file from manifest_blob.S.in
+ * with the blob's hash in it: zig caches compiled objects by source and command line,
+ * not by what .incbin pulled in, so the source must change when the blob does.
+ * blob sha1 @MANIFEST_BLOB_SHA1@ */
+    .section .rodata.bg3se_manifests, "a"
+    .globl bg3se_manifests_begin
+    .hidden bg3se_manifests_begin
+    .globl bg3se_manifests_end
+    .hidden bg3se_manifests_end
+bg3se_manifests_begin:
+    .incbin "@MANIFEST_BLOB@"
+bg3se_manifests_end:
+    .byte 0
+    .section .note.GNU-stack, "", @progbits

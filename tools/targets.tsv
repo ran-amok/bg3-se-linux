@@ -1,0 +1,109 @@
+# upstream's BinaryMappings.xml targets -> the macOS symbol that is the same entity.
+# Read by tools/targets.py. Columns, tab-separated: upstream symbol, kind (fn|data), macOS symbol
+# (Itanium, no leading underscore; `-` = the macOS binary has no symbol for it), note.
+# More than one row per upstream symbol is allowed: each is resolved, and the note says which is meant.
+# Names here are spellings found in the macOS symbol table; nothing in this file is an address.
+upstream	kind	mac	note
+ls__GlobalAllocator__Get	fn	-	inlined on macOS: only the singleton survives, ls::GlobalAllocator::m_ptr
+ls__GlobalAllocator__Get	data	_ZN2ls15GlobalAllocator5m_ptrE	what Get() returns; upstream's Get is `return m_ptr`
+ls__GlobalAllocator__Alloc	fn	-	no macOS symbol; reach through m_ptr's referrers
+ls__GlobalAllocator__Free	fn	-	no macOS symbol; reach through m_ptr's referrers
+ls__FixedString__IncRef	fn	_ZN2ls3gst7AcquireEj	upstream: void IncRef(uint32 index)
+ls__gGlobalStringTable	data	_ZN2ls3gst10s_InstanceE	the string table is namespace ls::gst on macOS
+ls__GlobalStringTable__MainTable__DecRef	fn	_ZN2ls3gst3Map7ReleaseERKNS0_12NodePoolDataE	candidate; signature differs from upstream's (MainTable*, FixedStringId*)
+ls__GlobalStringTable__MainTable__DecRef	fn	_ZN2ls11FixedStringD1Ev	the caller upstream's pattern sits in; carries DecRef where it is inlined
+ls__GlobalStringTable__MainTable__CreateFromString	fn	_ZN2ls3gst3AddERKNS_11_StringViewIcEE	upstream: uint32 (LSStringView const&) in CoreLib
+ls__GlobalStringTable__MainTable__CreateFromString	fn	_ZN2ls11FixedString6CreateERKNS_11_StringViewIcEE	the public wrapper
+ls__GlobalStringTable__MainTable__CreateFromString	fn	_ZN2ls11FixedString6CreateEPKci	the public wrapper, (char const*, int)
+ls__FixedString__GetString	fn	_ZN2ls3gst3GetEj	upstream: char const* GetString(uint32)
+ls__ThreadRegistry__RequestThreadIndex	fn	_ZN2ls14ThreadRegistry18RequestThreadIndexEv
+ls__FileReader__ctor	fn	_ZN2ls10FileReaderC1ERKNS_4PathENS0_5ETypeENS_9EnumFlagsINS_10EFileFlagsEEE	upstream: ctor(this, Path const&, type, flags)
+ls__FileReader__dtor	fn	_ZN2ls10FileReaderD1Ev
+ls__PathRoots	data	_ZN2ls4Path7s_RootsE
+App__UpdatePaths	fn	-	no App::UpdatePaths on macOS; ls::Path::UpdateRoots is the nearest named thing
+App__UpdatePaths	fn	_ZN2ls4Path11UpdateRootsEv	candidate only
+ecl__EoCClient	data	_ZN3ecl9EocClient5m_ptrE	spelled EocClient in the game
+ls__GlobalSwitches	data	Global	no ls::GlobalSwitches::m_ptr on macOS: the global App::CreateGlobalSwitches stores into is the file-static `Global` (nm 0x109788b78); the hand row has the Linux address and the witness
+esv__EoCServer	data	_ZN3esv9EocServer5m_ptrE
+ecl__GameStateMachine__Update	fn	-	esv's has a symbol, ecl's does not
+ecs__EntityWorld__Update	fn	_ZN3ecs11EntityWorld6UpdateERKN2ls8GameTimeE
+ecs__EntityWorld__FlushECBs	fn	_ZN3ecs11EntityWorld9FlushECBsEv
+ls__gTranslatedStringRepository	data	_ZN2ls26TranslatedStringRepository5m_ptrE
+ls__gTranslatedStringKeyManager	data	_ZN2ls26TranslatedStringKeyManager5m_ptrE
+ecl__EoCClient__HandleError	fn	_ZN3ecl9EocClient11HandleErrorERKN2ls16TranslatedStringEbS4_N3eoc18EMessageBoxLocalIdE
+ecl__gGameStateEventManager	data	_ZN3ecl21GameStateEventManager5m_ptrE
+esv__gGameStateEventManager	data	_ZN3esv21GameStateEventManager5m_ptrE
+esv__GameStateMachine__Update	fn	_ZN3esv16GameStateMachine6UpdateERKN2ls8GameTimeE
+App__LoadGraphicSettings	fn	_ZN3App25LoadGraphicSettingsConfigERN2ls10InitStructE
+App__LoadGraphicSettings	fn	_ZN7BaseApp25LoadGraphicSettingsConfigERN2ls10InitStructE	the base-class one; upstream's holds "graphicSettings.lsx"
+ls__gInputManager	data	_ZN2ls12InputManager5m_ptrE
+esv__GameStateThreaded__GameStateWorker__DoWork	fn	_ZN12ServerWorker6DoWorkEv	the oracle names the server's worker ServerWorker, in the global namespace (ServerWorker.cpp), not esv::GameStateThreaded::GameStateWorker; same role, and upstream's own Windows sig for the name refers to esv::platform::MovementSystemID, which this body loads
+ecl__GameStateThreaded__GameStateWorker__DoWork	fn	_ZN3ecl17GameStateThreaded15GameStateWorker6DoWorkEv
+esv__ExecuteStatsFunctor_AttackTargetContext	fn	_ZN3esv7functor20ExecuteStatsFunctorsEPKN3eoc16StatsFunctorListERNS0_23AttackTargetContextDataE
+esv__ExecuteStatsFunctor_AttackPositionContext	fn	_ZN3esv7functor20ExecuteStatsFunctorsEPKN3eoc16StatsFunctorListERNS0_25AttackPositionContextDataE
+esv__ExecuteStatsFunctor_MoveContext	fn	_ZN3esv7functor20ExecuteStatsFunctorsEPKN3eoc16StatsFunctorListERNS0_15MoveContextDataE
+esv__ExecuteStatsFunctor_TargetContext	fn	_ZN3esv7functor20ExecuteStatsFunctorsEPKN3eoc16StatsFunctorListERNS0_17TargetContextDataE
+esv__ExecuteStatsFunctor_NearbyAttackedContext	fn	_ZN3esv7functor20ExecuteStatsFunctorsEPKN3eoc16StatsFunctorListERNS0_25NearbyAttackedContextDataE
+esv__ExecuteStatsFunctor_NearbyAttackingContext	fn	_ZN3esv7functor20ExecuteStatsFunctorsEPKN3eoc16StatsFunctorListERNS0_26NearbyAttackingContextDataE
+esv__ExecuteStatsFunctor_EquipContext	fn	_ZN3esv7functor20ExecuteStatsFunctorsEPKN3eoc16StatsFunctorListERNS0_16EquipContextDataE
+esv__ExecuteStatsFunctor_SourceContext	fn	_ZN3esv7functor20ExecuteStatsFunctorsEPKN3eoc16StatsFunctorListERNS0_17SourceContextDataE
+esv__ExecuteStatsFunctor_InterruptContext	fn	_ZN3esv7functor20ExecuteStatsFunctorsERN3ecs11EntityWorldEPKN3eoc16StatsFunctorListERNS0_20InterruptContextDataE
+esv__StatsSystem__ThrowDamageEvent	fn	-	no symbol; called from StatsFunctorDealDamage::Execute
+stats__DealDamageFunctor__ApplyDamage	fn	_ZN3esv7functor22StatsFunctorDealDamage7ExecuteERKN3eoc22StatsFunctorDealDamageERKN3ecs9EntityRefES9_RK8Vector3fbRKNS2_5spell9SpellInfoEN2ls8TypeWrapIjNS2_23TStoryActionIDClassnameELb1EEERKNS2_16ActionOriginatorERKNS2_17ClassDescriptionsERKNS2_7HitDescERKNS2_10AttackDescERKNSH_2IDINS6_18EntityHandleTraitsEEENS2_8EHitWithEibS11_RKNSD_7SpellIdE	the entity-target overload; check the argument list against upstream's ApplyDamageProc
+stats__DealDamageFunctor__ApplyDamage	fn	_ZN3esv7functor22StatsFunctorDealDamage7ExecuteERKN3eoc22StatsFunctorDealDamageERKN3ecs9EntityRefERK8Vector3ffbRKNS2_5spell9SpellInfoEN2ls8TypeWrapIjNS2_23TStoryActionIDClassnameELb1EEERKNS2_16ActionOriginatorERKNS2_17ClassDescriptionsERKNS2_7HitDescERKNS2_10AttackDescERKNSH_2IDINS6_18EntityHandleTraitsEEE	the position overload
+AppInstance	data	_ZN7BaseApp13s_AppInstanceE
+App__Ctor	fn	-	no App::App symbol on macOS
+esv__SavegameManager	data	_ZN3esv15SavegameManager5m_ptrE
+stats__Object__SetPropertyString	fn	-	no symbol found under stats::/RPGStats_Object
+ls__AppliedMaterial__TryOverrideTexture2DParameter	fn	_ZN2ls15AppliedMaterial29TryOverrideTexture2DParameterERKNS_11FixedStringES3_b	(FixedString const&, FixedString const&, bool): the one upstream's caller passes fs_NM to
+ls__AppliedMaterial__TryOverrideTexture2DParameter	fn	_ZN2ls15AppliedMaterial29TryOverrideTexture2DParameterERKNS_11FixedStringERKPN2rf7TextureEb	the rf::Texture* overload
+ls__AppliedMaterial__LoadVirtualTexture	fn	_ZN2ls15AppliedMaterial18LoadVirtualTextureERKNS_11FixedStringE
+ls__AppliedMaterial__LoadTexture	fn	_ZN12_GLOBAL__N_117LoadTextureHelperERKN2ls11FixedStringE	no AppliedMaterial::LoadTexture symbol; the Windows pattern's body is macOS (anonymous namespace)::LoadTextureHelper(FixedString const&), matched to 0x32c8b00 -- sret 32 bytes, descriptor in word 0, not upstream's prototype (hand row)
+ls__TextureManager__UnloadTexture	fn	-	no symbol; PutTexture is the nearest named thing
+ls__gGlobalResourceManager	data	_ZN2ls15ResourceManager5m_ptrE
+eoc__gGuidResourceManager	data	_ZN2ls23ImmutableDataHeadmaster5m_ptrE	the game's class is ls::ImmutableDataHeadmaster, not anything named *GuidResource*: upstream's resource::GuidResourceManager mirrors it and its Definitions map is keyed by ls::TypeId<T, ls::ImmutableDataHeadmaster>::m_TypeIndex, which is where upstream's StaticDataTypeIndex comes from (hand row)
+esv__LevelManager	data	_ZN3esv12LevelManager5m_ptrE
+esv__CacheTemplateManager	data	_ZN3esv20CacheTemplateManager5m_ptrE
+ls__GlobalTemplateManager	data	_ZN2ls21GlobalTemplateManager5m_ptrE
+ecl__LevelManager	data	_ZN3ecl12LevelManager5m_ptrE
+ls__gTextureAtlasMap	data	_ZN2ls19TextureAtlasManager5m_ptrE	witnessed by ui::BrushManager::CreateBrushFromAtlasByIconId 0x39b0540 (hand row)
+eoc__DynamicStatsExpressionManager	data	_ZN3eoc29DynamicStatsExpressionManager5m_ptrE
+esv__OsirisVariableHelper__SavegameVisit	fn	_ZN3esv20OsirisVariableHelper13SavegameVisitEPN3eoc15SavegameVisitorE
+eoc__PassivePrototype__Init	fn	-	no symbol (ctor, dtor and Clean only)
+RPGStats__ParseDataBuffers	fn	_ZN8RPGStats15ParseDataBufferEN2ls9UniquePtrI19RPGStats_DataBuffervEE	singular on macOS; check it is the same level of the call tree
+gRPGStats	data	_ZN8RPGStats5m_ptrE
+RPGStats__Load	fn	-	no RPGStats::Load symbol: Larian's name is RPGStats::Start(ObjectSet<Path> const&) (macOS 0x10250b750: the spin lock at this+0x40c, then the loaders), but the matcher put that name on the wrong Linux function (0x2fd09c0, the EquipmentSet loader Start calls), so it is not used here; the hand row carries the address
+eoc__SpellPrototypeManager	data	_ZN3eoc21SpellPrototypeManager5m_ptrE
+eoc__StatusPrototypeManager	data	_ZN3eoc22StatusPrototypeManager5m_ptrE
+eoc__BoostPrototypeManager	data	_ZN3eoc21BoostPrototypeManager5m_ptrE
+eoc__PassivePrototypeManager	data	_ZN3eoc8Passives5m_ptrE	upstream's own comment calls it eoc__gPassiveManager
+eoc__InterruptPrototypeManager	data	_ZN3eoc25InterruptPrototypeManager5m_ptrE
+eoc__StatusPrototype__Init	fn	_ZN3eoc15StatusPrototype4InitERKN2ls11FixedStringEb
+eoc__ParseStaticBoosts	fn	-	only its lambdas have symbols (ls::Function<…eoc::ParseStaticBoosts(…)::$_N>)
+eoc__SpellPrototype__Init	fn	_ZN3eoc14SpellPrototype4InitERKN2ls11FixedStringE
+eoc__InterruptPrototype__Init	fn	-	no symbol (dtor only)
+Noesis__SymbolManager__Lock	data	-	file-static in Noesis; reach through Noesis::SymbolManager::AddString
+Noesis__SymbolManager__Data	data	-	file-static in Noesis; reach through Noesis::SymbolManager::AddString
+Noesis__gErrorHandler	data	-	file-static; reach through Noesis::SetErrorHandler / InvokeErrorHandler
+Noesis__Reflection__LockedByThreadId	data	-	file-static; reach through Noesis::Reflection::RegisterType
+Noesis__Reflection__Lock	data	-	file-static; reach through Noesis::Reflection::RegisterType
+Noesis__Reflection__NumLocks	data	-	file-static; reach through Noesis::Reflection::RegisterType
+Noesis__Reflection__Data	data	-	file-static; reach through Noesis::Reflection::RegisterType
+Noesis__GUI__LoadXaml	fn	_ZN6Noesis3GUI8LoadXamlEPKc	upstream's caller passes "MainCanvas.xaml", a char const*
+Noesis__Visual__RemoveVisualChild	fn	_ZN6Noesis6Visual17RemoveVisualChildEPS0_
+Noesis__Visual__AddVisualChild	fn	_ZN6Noesis6Visual14AddVisualChildEPS0_
+Noesis__Visual__PointToScreen	fn	_ZNK6Noesis6Visual13PointToScreenERKNS_5PointE
+Noesis__Visual__PointFromScreen	fn	_ZNK6Noesis6Visual15PointFromScreenERKNS_5PointE
+Noesis__VisualTreeHelper__HitTest	fn	_ZN6Noesis16VisualTreeHelper7HitTestEPNS_6VisualERKNS_5PointE
+eoc__AiGrid__FindPath	fn	_ZN3eoc6AiGrid8FindPathEi
+eoc__AiGrid__FindPathImmediate	fn	_ZN3eoc6AiGrid17FindPathImmediateEib
+ecl__gCursorControl	data	_ZN3ecl13CursorControl5m_ptrE
+ls__gDragDropManager	data	_ZN2ls15DragDropManager5m_ptrE
+ls__Visual__UpdateBlendshapeWeightsFromSkeleton	fn	-	no symbol with Blendshape in it
+esv__gSurfaceActionFactory	data	_ZN3esv20SurfaceActionFactory5m_ptrE
+esv__SurfaceActionFactory__DoCreateAction	fn	_ZN3esv20SurfaceActionFactory12CreateActionEN3eoc18ESurfaceActionTypeEN2ls8TypeWrapIjNS1_23TStoryActionIDClassnameELb1EEERKNS1_17ClassDescriptionsENS3_12ObjectHandleE
+esv__TransformSurfaceAction__Init	fn	_ZN3esv22TransformSurfaceAction4InitEN3eoc27ESurfaceTransformActionTypeENS1_13ESurfaceLayerENS1_12ESurfaceTypeE
+ui__DataContextProvider__ExecuteCommandQueues	fn	-	no symbol; it calls ui::CommandProcessor::ExecuteCommandQueue, which has one
+Kernel_FindFirstFileW	fn	-	DllImport: Win32 only; the Linux build has opendir/readdir in the PLT
+Kernel_FindNextFileW	fn	-	DllImport: Win32 only
+Kernel_FindClose	fn	-	DllImport: Win32 only

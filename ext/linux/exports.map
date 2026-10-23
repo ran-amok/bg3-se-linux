@@ -1,0 +1,5 @@
+/* One entry point (loader/src/host_api.h); everything else, the static C++ runtime included, stays inside. */
+{
+    global: bg3se_ext_init;
+    local: *;
+};

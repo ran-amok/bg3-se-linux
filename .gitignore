@@ -1,0 +1,20 @@
+build/
+*.o
+*.so
+*.gpr
+*.rep/
+*.lock
+.cache/
+compile_commands.json
+# game binaries and anything derived from them never enter the repo
+/game/
+/dumps/
+__pycache__/
+# upstream generators and protoc write into the vendored tree (ext/CMakeLists.txt)
+ext/src/BG3Extender/GameDefinitions/Generated/
+ext/src/**/*.pb.h
+ext/src/**/*.pb.cc
+# per-machine launch configuration (paths, accounts)
+tools/launch.conf
+# release tarballs (tools/release.sh)
+dist/

@@ -1,0 +1,73 @@
+# Builds libbg3se.so and libbg3se-ext.so from a clean checkout, runs the checks that need no
+# game, and uploads the tarball tools/release.sh packs. On a tag v* it also publishes that
+# tarball as a GitHub release. Everything the build needs that the runner image lacks is
+# installed here, pinned: zig 0.16.0 and protoc 36.1 by sha256, the Python packages by name.
+name: build
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    permissions:
+      contents: write     # gh release create, on a tag only
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0  # git describe wants the tags
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.14'
+      - run: python3 -m pip install numpy capstone
+
+      - name: apt packages
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ninja-build cmake unzip xz-utils binutils
+
+      - name: zig 0.16.0
+        run: |
+          set -eu
+          curl -fsSL -o zig.tar.xz https://ziglang.org/download/0.16.0/zig-x86_64-linux-0.16.0.tar.xz
+          echo "70e49664a74374b48b51e6f3fdfbf437f6395d42509050588bd49abe52ba3d00  zig.tar.xz" | sha256sum -c
+          mkdir -p "$HOME/opt" && tar -C "$HOME/opt" -xf zig.tar.xz && rm zig.tar.xz
+          echo "$HOME/opt/zig-x86_64-linux-0.16.0" >> "$GITHUB_PATH"
+
+      - name: protoc 36.1
+        run: |
+          set -eu
+          curl -fsSL -o protoc.zip https://github.com/protocolbuffers/protobuf/releases/download/v36.1/protoc-36.1-linux-x86_64.zip
+          echo "c4bc672d9d49214dc8cafdceadf4df92182d6ca8e3ec65a56b2d7de5602669b4  protoc.zip" | sha256sum -c
+          mkdir -p "$HOME/opt/protoc" && unzip -q protoc.zip -d "$HOME/opt/protoc" && rm protoc.zip
+          echo "$HOME/opt/protoc/bin" >> "$GITHUB_PATH"
+
+      - name: build, check, package
+        run: |
+          set -eu
+          case "$GITHUB_REF" in
+            refs/tags/*) ver=$GITHUB_REF_NAME ;;
+            *)           ver=$(git rev-parse --short=10 HEAD) ;;
+          esac
+          tools/release.sh "$ver"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: bg3-se-linux
+          path: dist/
+          if-no-files-found: error
+
+      - name: release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+          gh release create "$GITHUB_REF_NAME" dist/*.tar.xz dist/*.sha256 \
+            --title "bg3-se-linux $GITHUB_REF_NAME" --notes-file dist/RELEASE-NOTES.md --verify-tag

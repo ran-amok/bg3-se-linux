@@ -1,0 +1,34 @@
+#!/bin/bash
+# The extender's debug console, over its Unix socket (ext: Extender/Shared/Console.cpp).
+#   tools/bg3se-console                 interactive (needs socat or nc with -U)
+#   tools/bg3se-console 'Ext.Utils.Print(1)'   one command, then exit
+# Commands are upstream's: Lua code, `server`/`client`, `reset`, `!cmd args` (Lua
+# ConsoleCommand event), `--[[` ... `]]--` for multi-line, `exit`. Output printed by
+# the extender while connected is echoed here; the record is extender.log beside it.
+set -u
+# The socket is wherever the game's state went. On a play box that is the XDG_STATE_HOME a
+# launch.conf beside this script sets (written by hand; the wrapper exports
+# it over the caller's), so read it the same way -- otherwise the player, whose shell has no
+# such variable, is sent to their own ~/.local/state and told the game is not running.
+here=$(dirname "$(realpath "$0")")
+state_home=${XDG_STATE_HOME:-$HOME/.local/state}
+if [ -f "$here/launch.conf" ]; then
+    conf=$(sed -n 's/^XDG_STATE_HOME=//p' "$here/launch.conf" | tail -1)
+    [ -n "$conf" ] && state_home=$conf
+fi
+sock=${BG3SE_CONSOLE_SOCK:-$state_home/bg3-se-linux/console.sock}
+[ -S "$sock" ] || { echo "no console socket at $sock (is the game running with the extender?)" >&2; exit 2; }
+if [ $# -gt 0 ]; then
+    { printf '%s\n' "$*"; sleep 0.5; printf 'exit\n'; } | if command -v socat > /dev/null; then socat - "UNIX-CONNECT:$sock"; else nc -U "$sock"; fi
+    exit
+fi
+# Line mode, not raw: the console reads newline-terminated commands, and a raw tty sends \r on
+# Enter with echo off -- nothing typed shows or arrives, and output stair-steps.
+# READLINE gives echo, editing and a history in the caller's home.
+if command -v socat > /dev/null; then
+    if socat -V 2> /dev/null | grep -q 'WITH_READLINE 1'; then
+        exec socat "READLINE,history=$HOME/.bg3se_console_history" "UNIX-CONNECT:$sock"
+    fi
+    exec socat - "UNIX-CONNECT:$sock"
+elif command -v nc > /dev/null; then exec nc -U "$sock"
+else echo "need socat or nc" >&2; exit 2; fi

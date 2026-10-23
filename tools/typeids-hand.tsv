@@ -1,0 +1,32 @@
+# Rows of the ECS TypeId table read off the Linux disassembly by hand (tools/disasm.py), keyed by ELF
+# build-id prefix. Read by `tools/typeids.py verify --selftest`:
+# each must be in typeids/<build>.tsv verbatim, and for id rows the registrant function verify finds
+# must be `registrant`. `witness` says what was seen, so that it can be seen again on the next build.
+# The registrant's shape (c8da62b1): a static node {+0 &m_TypeIndex, +8 name ptr, +0x10 name len,
+# +0x18 next} under a __cxa_guard; the name comes from the __PRETTY_FUNCTION__ string
+# "ls::StringView ls::GetTypeName() [T = X]" through 0x28ddf70, built in the registrant itself
+# (systems, static data, some components) or in a name getter it calls; then the node is pushed onto
+# the list head at ls::TypeContext<C>::m_State + 8.
+build	kind	addr	context	type	registrant	witness
+c8da62b1	ctx	0x7d60840	ecs::ComponentTypeIdContext	-	-	registrants 0x46841e0 and 0x46a8c80 push their node onto the qword at 0x7d60848 = m_State+8 (mov rcx,[0x7d60848]; mov [node+0x18],rcx; mov [0x7d60848],node)
+c8da62b1	ctx	0x7d60828	ecs::OneFrameComponentTypeIdContext	-	-	registrant 0x46834e0 pushes onto [0x7d60830] = m_State+8
+c8da62b1	ctx	0x7d5cee8	ecs::SystemsContext	-	-	registrant 0x47bd470 pushes onto [0x7d5cef0] = m_State+8
+c8da62b1	ctx	0x7d60520	ecs::sync::ReplicatedTypeContext	-	-	registrant 0x46c9e40 pushes onto [0x7d60528] = m_State+8
+c8da62b1	ctx	0x7d20360	ls::ImmutableDataHeadmaster	-	-	registrant 0x47c60b0 pushes onto [0x7d20368] = m_State+8
+c8da62b1	id	0x7c225a0	ecs::ComponentTypeIdContext	ecl::ActiveTurnComponent	0x46841e0	lea rax,[0x7c225a0] (.symtab: ls::TypeId<ecl::ActiveTurnComponent, ecs::ComponentTypeIdContext>::m_TypeIndex) stored to node 0x7c22940; call 0x46842e0, the getter, builds the name from "GetTypeName() [T = ecl::ActiveTurnComponent]" at 0x193b794 (len 0x3f); node pushed onto [0x7d60848]
+c8da62b1	id	0x7c3b018	ecs::ComponentTypeIdContext	ecl::Character	0x46a8c80	same shape: node 0x7c3b220, getter 0x46a8d80 with the string at 0x1a00267, head [0x7d60848]
+c8da62b1	id	0x7b768d0	ecs::OneFrameComponentTypeIdContext	ecl::CharacterLightSystemTLSceneReloadOneFrameComponent	0x46834e0	getter 0x46835e0 with the string at 0x1ae689b; head [0x7d60830]
+c8da62b1	id	0x7bf1fc0	ecs::SystemsContext	gr::GrannySystem	0x47bd470	name built in the registrant itself from the string at 0x1b48ef3 (len 0x37, call 0x28ddf70) into 0x7b72b30; node 0x7bf2098; head [0x7d5cef0]
+c8da62b1	id	0x7cfde58	ecs::sync::ReplicatedTypeContext	eoc::AbilityBoostComponent	0x46c9e40	getter 0x46c9f40 with the string at 0x1ad53a3; head [0x7d60528]
+c8da62b1	id	0x7cc34b8	ls::ImmutableDataHeadmaster	eoc::AbilityListManager	0x47c60b0	name built in the registrant from the string at 0x1a5a33f; head [0x7d20368]
+a187af94	ctx	0x7d608c0	ecs::ComponentTypeIdContext	-	-	registrants 0x4684230 and 0x46a8cd0 push their node onto the qword at 0x7d608c8 = m_State+8 (mov rcx,[0x7d608c8]; mov [node+0x18],rcx; mov [0x7d608c8],node)
+a187af94	ctx	0x7d608a8	ecs::OneFrameComponentTypeIdContext	-	-	registrant 0x4683530 pushes onto [0x7d608b0] = m_State+8
+a187af94	ctx	0x7d5cf68	ecs::SystemsContext	-	-	registrant 0x47bd4c0 pushes onto [0x7d5cf70] = m_State+8
+a187af94	ctx	0x7d605a0	ecs::sync::ReplicatedTypeContext	-	-	registrant 0x46c9e90 pushes onto [0x7d605a8] = m_State+8
+a187af94	ctx	0x7d203e0	ls::ImmutableDataHeadmaster	-	-	registrant 0x47c6100 pushes onto [0x7d203e8] = m_State+8
+a187af94	id	0x7c22620	ecs::ComponentTypeIdContext	ecl::ActiveTurnComponent	0x4684230	lea rax,[0x7c22620] (.symtab: ls::TypeId<ecl::ActiveTurnComponent, ecs::ComponentTypeIdContext>::m_TypeIndex) stored to node 0x7c229c0; call 0x4684330, the getter, builds the name from "GetTypeName() [T = ecl::ActiveTurnComponent]" at 0x193b794 (len 0x3f); node pushed onto [0x7d608c8]
+a187af94	id	0x7c3b098	ecs::ComponentTypeIdContext	ecl::Character	0x46a8cd0	same shape: node 0x7c3b2a0, getter 0x46a8dd0 with the string at 0x1a00259, head [0x7d608c8]
+a187af94	id	0x7b76950	ecs::OneFrameComponentTypeIdContext	ecl::CharacterLightSystemTLSceneReloadOneFrameComponent	0x4683530	getter 0x4683630 with the string at 0x1ae689b; head [0x7d608b0]
+a187af94	id	0x7bf2040	ecs::SystemsContext	gr::GrannySystem	0x47bd4c0	name built in the registrant itself from the string at 0x1b48ef3 (len 0x37, call 0x28ddfc0) into 0x7b72bb0; node 0x7bf2118; head [0x7d5cf70]
+a187af94	id	0x7cfded8	ecs::sync::ReplicatedTypeContext	eoc::AbilityBoostComponent	0x46c9e90	getter 0x46c9f90 with the string at 0x1ad53a3; head [0x7d605a8]
+a187af94	id	0x7cc3538	ls::ImmutableDataHeadmaster	eoc::AbilityListManager	0x47c6100	name built in the registrant from the string at 0x1a5a33f; head [0x7d203e8]

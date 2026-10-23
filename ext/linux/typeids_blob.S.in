@@ -1,0 +1,16 @@
+/* Every typeids/<build-id>.tsv (the ECS TypeId tables, tools/typeids.py), concatenated by
+ * CMake at configure time into the blob below; read by ext/linux/typeids.cpp. CMake writes
+ * this file from typeids_blob.S.in with the blob's hash in it: zig caches compiled objects
+ * by source and command line, not by what .incbin pulled in, so the source must change
+ * when the blob does.
+ * blob sha1 @TYPEIDS_BLOB_SHA1@ */
+    .section .rodata.bg3se_typeids, "a"
+    .globl bg3se_typeids_begin
+    .hidden bg3se_typeids_begin
+    .globl bg3se_typeids_end
+    .hidden bg3se_typeids_end
+bg3se_typeids_begin:
+    .incbin "@TYPEIDS_BLOB@"
+bg3se_typeids_end:
+    .byte 0
+    .section .note.GNU-stack, "", @progbits

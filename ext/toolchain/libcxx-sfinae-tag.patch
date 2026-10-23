@@ -1,0 +1,109 @@
+--- a/__tuple/sfinae_helpers.h
++++ b/__tuple/sfinae_helpers.h
+@@ -82,26 +82,26 @@
+ 
+ #if _LIBCPP_STD_VER >= 17
+ 
+-template <bool _CanCopy, bool _CanMove>
++template <bool _CanCopy, bool _CanMove, class _Tag = void>
+ struct __sfinae_ctor_base {};
+-template <>
+-struct __sfinae_ctor_base<false, false> {
++template <class _Tag>
++struct __sfinae_ctor_base<false, false, _Tag> {
+   __sfinae_ctor_base()                                     = default;
+   __sfinae_ctor_base(__sfinae_ctor_base const&)            = delete;
+   __sfinae_ctor_base(__sfinae_ctor_base&&)                 = delete;
+   __sfinae_ctor_base& operator=(__sfinae_ctor_base const&) = default;
+   __sfinae_ctor_base& operator=(__sfinae_ctor_base&&)      = default;
+ };
+-template <>
+-struct __sfinae_ctor_base<true, false> {
++template <class _Tag>
++struct __sfinae_ctor_base<true, false, _Tag> {
+   __sfinae_ctor_base()                                     = default;
+   __sfinae_ctor_base(__sfinae_ctor_base const&)            = default;
+   __sfinae_ctor_base(__sfinae_ctor_base&&)                 = delete;
+   __sfinae_ctor_base& operator=(__sfinae_ctor_base const&) = default;
+   __sfinae_ctor_base& operator=(__sfinae_ctor_base&&)      = default;
+ };
+-template <>
+-struct __sfinae_ctor_base<false, true> {
++template <class _Tag>
++struct __sfinae_ctor_base<false, true, _Tag> {
+   __sfinae_ctor_base()                                     = default;
+   __sfinae_ctor_base(__sfinae_ctor_base const&)            = delete;
+   __sfinae_ctor_base(__sfinae_ctor_base&&)                 = default;
+@@ -109,26 +109,26 @@
+   __sfinae_ctor_base& operator=(__sfinae_ctor_base&&)      = default;
+ };
+ 
+-template <bool _CanCopy, bool _CanMove>
++template <bool _CanCopy, bool _CanMove, class _Tag = void>
+ struct __sfinae_assign_base {};
+-template <>
+-struct __sfinae_assign_base<false, false> {
++template <class _Tag>
++struct __sfinae_assign_base<false, false, _Tag> {
+   __sfinae_assign_base()                                       = default;
+   __sfinae_assign_base(__sfinae_assign_base const&)            = default;
+   __sfinae_assign_base(__sfinae_assign_base&&)                 = default;
+   __sfinae_assign_base& operator=(__sfinae_assign_base const&) = delete;
+   __sfinae_assign_base& operator=(__sfinae_assign_base&&)      = delete;
+ };
+-template <>
+-struct __sfinae_assign_base<true, false> {
++template <class _Tag>
++struct __sfinae_assign_base<true, false, _Tag> {
+   __sfinae_assign_base()                                       = default;
+   __sfinae_assign_base(__sfinae_assign_base const&)            = default;
+   __sfinae_assign_base(__sfinae_assign_base&&)                 = default;
+   __sfinae_assign_base& operator=(__sfinae_assign_base const&) = default;
+   __sfinae_assign_base& operator=(__sfinae_assign_base&&)      = delete;
+ };
+-template <>
+-struct __sfinae_assign_base<false, true> {
++template <class _Tag>
++struct __sfinae_assign_base<false, true, _Tag> {
+   __sfinae_assign_base()                                       = default;
+   __sfinae_assign_base(__sfinae_assign_base const&)            = default;
+   __sfinae_assign_base(__sfinae_assign_base&&)                 = default;
+--- a/variant
++++ b/variant
+@@ -1155,10 +1155,12 @@
+ template <class... _Types>
+ class _LIBCPP_DECLSPEC_EMPTY_BASES _LIBCPP_NO_SPECIALIZATIONS variant
+     : private __sfinae_ctor_base< __all<is_copy_constructible_v<_Types>...>::value,
+-                                  __all<is_move_constructible_v<_Types>...>::value>,
++                                  __all<is_move_constructible_v<_Types>...>::value,
++                                  variant<_Types...>>,
+       private __sfinae_assign_base<
+           __all<(is_copy_constructible_v<_Types> && is_copy_assignable_v<_Types>)...>::value,
+-          __all<(is_move_constructible_v<_Types> && is_move_assignable_v<_Types>)...>::value> {
++          __all<(is_move_constructible_v<_Types> && is_move_assignable_v<_Types>)...>::value,
++          variant<_Types...>> {
+   static_assert(0 < sizeof...(_Types), "variant must consist of at least one alternative.");
+ 
+   static_assert(__all<!is_array_v<_Types>...>::value, "variant can not have an array type as an alternative.");
+--- a/optional
++++ b/optional
+@@ -556,13 +556,17 @@
+ };
+ 
+ template <class _Tp>
++class optional;
++
++template <class _Tp>
+ using __optional_sfinae_ctor_base_t _LIBCPP_NODEBUG =
+-    __sfinae_ctor_base< is_copy_constructible<_Tp>::value, is_move_constructible<_Tp>::value >;
++    __sfinae_ctor_base< is_copy_constructible<_Tp>::value, is_move_constructible<_Tp>::value, optional<_Tp> >;
+ 
+ template <class _Tp>
+ using __optional_sfinae_assign_base_t _LIBCPP_NODEBUG =
+     __sfinae_assign_base< (is_copy_constructible<_Tp>::value && is_copy_assignable<_Tp>::value),
+-                          (is_move_constructible<_Tp>::value && is_move_assignable<_Tp>::value) >;
++                          (is_move_constructible<_Tp>::value && is_move_assignable<_Tp>::value),
++                          optional<_Tp> >;
+ 
+ template <class _Tp>
+ class optional;

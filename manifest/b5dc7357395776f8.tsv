@@ -1,0 +1,21 @@
+# build-id b5dc7357395776f8
+# libOsiris.so shipped with bg3 4.1.1.7398727 (Steam build 24532579, bg3 build-id c8da62b1…); snapshot $BG3_SPECIMENS/steam-24532579_c8da62b137caebd03b57c23b65ba2547745ce851/bin/libOsiris.so
+# The second module's manifest: the Osiris globals upstream reads off COsiris::COsiris (OsirisStaticGlobals),
+# named as upstream names them, with Osiris's own names (the macOS libOsiris.dylib exports them) in the note. All in .bss.
+# Witness for the ten: COsiris::COsiris 0x7c880 allocates and stores them in this order with these sizes, and the macOS
+# constructor (0x4a950 in the x86_64 slice) does the same, size for size, into the named globals. The loader finds this
+# module by soname (manifest::load_library) and verifies the rows against it like the game's own.
+symbol	kind	addr	size	bytes	checks	note
+osi__StringTable	data	0x1116a0	-	-	nth:0x7c880:0 in:0x7c880	OsiStringTable: 1st store of the ctor, an 8-byte object COsiStringTable::COsiStringTable (0x72c30) is called on; sits after COsiris::OsirisObject 0x111690 and s_Allocator 0x111698 as on macOS
+osi__Variables	data	0x114ed0	-	-	nth:0x7c880:1 in:0x7c880	RuleVariableMan: 2nd store, 0x1820 bytes = 256 x 24-byte items + count + an 0x800 buffer (upstream's VariableDb)
+osi__Types	data	0x1127a0	-	-	nth:0x7c880:2 in:0x7c880	OsiDIVObjectTypesMan: 3rd store, 0x6008 bytes = 1023 x 24-byte libc++ map slots + NumItems + a 24-byte alias vector (OsiTypeDb)
+osi__Enums	data	0x112790	-	-	nth:0x7c880:3 in:0x7c880 in-str:__GLOBAL_SYMTABLE	OsiParseSymtableMan: 4th store, 0x28 bytes; the ctor then registers "__GLOBAL_SYMTABLE" in it (EnumDb)
+osi__Functions	data	0x119d50	-	-	nth:0x7c880:4 in:0x7c880 in:0x8f7c0	OsiFunctionMan: 5th store, 0xc020 bytes = name index (1023 slots), id index (1023 slots), an id tree, an unordered_map, a counter; COsiris::GetFunctionMappings 0x8f7c0 walks its name index (stride 0x18 from +0x10, NumItems at +0x5fe8, counter at +0xc018)
+osi__Objects	data	0x112798	-	-	nth:0x7c880:5 in:0x7c880	OsiDIVObjectsMan: 6th store, 0xbff0 bytes = two 1023-slot indexes + a tree (ObjectDb)
+osi__Goals	data	0x119d48	-	-	nth:0x7c880:6 in:0x7c880	OsiGoalMan: 7th store, 0x6008 bytes = 1023 slots + NumItems + a vector given a 0x1000-byte buffer (GoalDb)
+osi__Adapters	data	0x1127b0	-	-	nth:0x7c880:7 in:0x7c880	ReteAdaptorFactory: 8th store, 0x20 bytes zeroed = {u32 Size; std::vector Elements} (TypedDb); copied to 0x119ec8 (PCFactoryProduct<CReteAdaptor>::s_pMyFactory)
+osi__Databases	data	0x114ed8	-	-	nth:0x7c880:8 in:0x7c880	ReteDBaseFactory: 9th store, 0x20 bytes (TypedDb); copied to 0x119ec0
+osi__Nodes	data	0x119d40	-	-	nth:0x7c880:9 in:0x7c880	ReteNodeFactory: 10th store, 0x20 bytes (TypedDb); copied to 0x119eb8
+osi__DebugFlags	data	0x119d58	-	-	nth:0x8f420:0 in:0x8f420	ParserFlags: the dword COsiris::SetOption 0x8f420 reads, masks with upstream's DebugFlag bits (0x1ff0000, 0x100000, 0x4) and writes back; the log stream follows at 0x119d60 (fh_Log), as on macOS
+osi__CReteStartNode__InsertTuple	fn	0xa1c70	958	554157415641554154534883ec484989	str:"index out of range" str:"Invalid product!" refs:0x119ec0 refs:0xa0210	CReteStartNode::Add(COsipParameterList*) (macOS 0x65d00, r1:6): slot 13 of the CReteStartNode/CReteFact/CReteEvent vtables 0x10a6f0/0x10a960/0x10aa30 (upstream NodeVMT::InsertTuple; this build orders the four tuple slots PushDown, PushDownDelete, Insert, Delete). Reads the list Size byte at +0x18, walks Next from +0x10, Assign()s each Item (+0x10) into a CTuple, then pDBase() -> ReteDBaseFactory 0x119ec0 -> find 0xa07c0 / _insert 0xa0210 (the refs check that tells it from Del). COsiris::Event 0x8ea40 and COsiFunctionParseData::Fire 0x6b4d0 call this slot; the extender compares a node slot 13 to this row before an Osi insert
+osi__CReteStartNode__DeleteTuple	fn	0xa2030	499	554157415641554154534883ec284889	str:"index out of range" str:"Invalid product!" refs:0x119ec0 refs:0xa1110	CReteStartNode::Del(COsipParameterList*) (macOS 0x66140, s1:1.00): slot 14 of the same tables (upstream NodeVMT::DeleteTuple); the same list walk, then CReteDBase::erase 0xa1110. Fire() calls this slot at 0x6c07f. Compared to a node slot 14 before an Osi delete

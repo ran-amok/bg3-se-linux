@@ -1,0 +1,40 @@
+/* Only the interposers leave this object; the static C++ runtime stays inside. */
+{
+    global:
+        SDL_Init;
+        /* BG3SE_SDL_TRACE: the display-mode calls, logged (src/sdl_trace.cpp) */
+        SDL_GetNumVideoDisplays;
+        SDL_GetNumDisplayModes;
+        SDL_GetDisplayMode;
+        SDL_GetDesktopDisplayMode;
+        SDL_GetClosestDisplayMode;
+        SDL_GetDisplayBounds;
+        SDL_SetWindowDisplayMode;
+        SDL_SetWindowFullscreen;
+        SDL_SetWindowSize;
+        /* the crash reader stays in front of LinuxCrashReporter (src/crash.cpp) */
+        sigaction;
+        signal;
+        /* an exit that no signal handler sees -- the LoadMenu crash (src/crash.cpp) */
+        exit;
+        _exit;
+        _Exit;
+        quick_exit;
+        abort;
+        /* and a kill the process sends itself -- the other half (src/crash.cpp) */
+        kill;
+        raise;
+        pthread_kill;
+        /* and the parent's view of how the game process died (src/crash.cpp) */
+        wait4;
+        waitpid;
+        /* COsiris, as bg3 imports it from libOsiris.so (src/osiris.cpp) */
+        _ZN7COsiris20RegisterDIVFunctionsEP19TOsirisInitFunction;
+        _ZN7COsiris19GetFunctionMappingsEPP11MappingInfoPj;
+        _ZN7COsiris8InitGameEv;
+        _ZN7COsiris4LoadER12COsiSmartBuf;
+        _ZN7COsiris5MergeEPKw;
+        _ZN7COsiris5EventEjP16COsiArgumentDesc;
+    local:
+        *;
+};
