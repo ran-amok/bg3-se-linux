@@ -9,7 +9,6 @@ not this. bg3le was started independently around the same time as this project. 
 maintained and released, has an installer, and is built to survive game updates. This repository
 is **not maintained**. It is published as it stood on 2026-10-22, as source and reference
 material: a second, independent reading of the same binary, and the tools used to make it.
-Issues and discussions are off on purpose: nobody is answering them.
 
 ## How this was made: AI involvement
 
